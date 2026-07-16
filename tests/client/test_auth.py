@@ -10,7 +10,6 @@ from urllib.parse import parse_qs, urlparse
 
 import httpx
 import pytest
-from inline_snapshot import snapshot
 from pydantic import AnyHttpUrl, AnyUrl
 
 from mcp.client.auth import OAuthClientProvider
@@ -968,18 +967,19 @@ def test_build_metadata(
         revocation_options=RevocationOptions(enabled=True),
     )
 
-    assert metadata == snapshot(
-        OAuthMetadata(
-            issuer=AnyHttpUrl(issuer_url),
-            authorization_endpoint=AnyHttpUrl(authorization_endpoint),
-            token_endpoint=AnyHttpUrl(token_endpoint),
-            registration_endpoint=AnyHttpUrl(registration_endpoint),
-            scopes_supported=["read", "write", "admin"],
-            grant_types_supported=["authorization_code", "refresh_token"],
-            token_endpoint_auth_methods_supported=["client_secret_post"],
-            service_documentation=AnyHttpUrl(service_documentation_url),
-            revocation_endpoint=AnyHttpUrl(revocation_endpoint),
-            revocation_endpoint_auth_methods_supported=["client_secret_post"],
-            code_challenge_methods_supported=["S256"],
-        )
+    # Plain equality: inline_snapshot re-evals the same AST across parametrize
+    # cases and rejects differing URL values ("snapshot value should not change").
+    expected = OAuthMetadata(
+        issuer=AnyHttpUrl(issuer_url),
+        authorization_endpoint=AnyHttpUrl(authorization_endpoint),
+        token_endpoint=AnyHttpUrl(token_endpoint),
+        registration_endpoint=AnyHttpUrl(registration_endpoint),
+        scopes_supported=["read", "write", "admin"],
+        grant_types_supported=["authorization_code", "refresh_token"],
+        token_endpoint_auth_methods_supported=["client_secret_post"],
+        service_documentation=AnyHttpUrl(service_documentation_url),
+        revocation_endpoint=AnyHttpUrl(revocation_endpoint),
+        revocation_endpoint_auth_methods_supported=["client_secret_post"],
+        code_challenge_methods_supported=["S256"],
     )
+    assert metadata == expected

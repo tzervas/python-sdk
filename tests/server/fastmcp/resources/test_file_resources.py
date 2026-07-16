@@ -103,6 +103,10 @@ class TestFileResource:
     @pytest.mark.skipif(
         os.name == "nt", reason="File permissions behave differently on Windows"
     )
+    @pytest.mark.skipif(
+        os.geteuid() == 0 if hasattr(os, "geteuid") else False,
+        reason="Root bypasses file permission checks",
+    )
     @pytest.mark.anyio
     async def test_permission_error(self, temp_file: Path):
         """Test reading a file without permissions."""
